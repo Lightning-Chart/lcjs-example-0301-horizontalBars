@@ -8,6 +8,7 @@ const lcjs = require('@arction/lcjs')
 const {
     lightningChart,
     SolidFill,
+    SolidLine,
     ColorRGBA,
     emptyLine,
     emptyFill,
@@ -106,6 +107,12 @@ let barChart
             // Disable default ticks.
             .setTickStyle(emptyTick)
 
+        //Add middle line
+        const constantLine = axisX.addConstantLine()
+        constantLine.setValue(0)
+            .setMouseInteractions(false)
+            .setStrokeStyle(new SolidLine(
+                { thickness: 2, fillStyle: new SolidFill({ color: ColorRGBA(125,125,125) }) }))
 
         /**
          * Add multiple bars.
