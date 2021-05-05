@@ -15,6 +15,7 @@ const {
     AxisTickStrategies,
     AutoCursorModes,
     UIOrigins,
+    UIElementBuilders,
     Themes
 } = lcjs
 
@@ -68,7 +69,7 @@ let barChart
             })
         )
         // Change how marker displays its information.
-        rectangles.setResultTableFormatter((builder, series, figure) => {
+        rectangles.setCursorResultTableFormatter((builder, series, figure) => {
             // Find cached entry for the figure.
             const entry = bars.find((bar) => bar.rect == figure).entry
             // Parse result table content from values of 'entry'.
@@ -155,16 +156,11 @@ let barChart
             )
 
             // Add custom tick, more like categorical axis.
-            axisY.addCustomTick()
+            axisY.addCustomTick(UIElementBuilders.AxisTick)
                 .setValue(y - figureGap)
                 .setGridStrokeLength(0)
                 .setTextFormatter(_ => entry.category)
                 .setMarker(marker => marker
-                    .setPadding(4)
-                    .setBackground((background) => background
-                        .setFillStyle(emptyFill)
-                        .setStrokeStyle(emptyLine)
-                    )
                     .setTextFillStyle(new SolidFill({ color: ColorRGBA(170, 170, 170) }))
                 )
             y += figureThickness + figureGap
