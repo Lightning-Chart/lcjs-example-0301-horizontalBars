@@ -1,6 +1,6 @@
-# Horizontal Bars
+# JavaScript Horizontal Bar Chart
 
-![Horizontal Bars](horizontalBars.png)
+![JavaScript Horizontal Bar Chart](horizontalBars.png)
 
 This demo application belongs to the set of examples for LightningChart JS, data visualization library for JavaScript.
 
