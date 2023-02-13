@@ -16,7 +16,7 @@ const {
     AutoCursorModes,
     UIOrigins,
     UIElementBuilders,
-    Themes
+    Themes,
 } = lcjs
 
 const lc = lightningChart()
@@ -32,11 +32,12 @@ let barChart
 
         let y = 0
         const figureThickness = 10
-        const figureGap = figureThickness * .5
+        const figureGap = figureThickness * 0.5
         const bars = []
 
         // Create a XY-Chart and add a RectSeries to it for rendering rectangles.
-        const chart = lc.ChartXY(options)
+        const chart = lc
+            .ChartXY(options)
             .setTitle('Mass memory production increases in 2018')
             .setAutoCursorMode(AutoCursorModes.onHover)
             // Disable mouse interactions (e.g. zooming and panning) of plotting area
@@ -49,61 +50,46 @@ let barChart
         // cursor
         //#region
         // Show band using Rectangle series.
-        const band = chart.addRectangleSeries()
+        const band = chart
+            .addRectangleSeries()
             .setMouseInteractions(false)
-            .setCursorEnabled(false).add({ x: 0, y: 0, width: 0, height: 0 })
+            .setCursorEnabled(false)
+            .add({ x: 0, y: 0, width: 0, height: 0 })
             .setFillStyle(new SolidFill().setColor(ColorRGBA(255, 255, 255, 50)))
             .setStrokeStyle(emptyLine)
-            .dispose()
+            .setVisible(false)
         // Modify AutoCursor.
-        chart.setAutoCursor(cursor => cursor
-            .setResultTableAutoTextStyle(true)
-            .disposePointMarker()
-            .disposeTickMarkerX()
-            .disposeTickMarkerY()
-            .setGridStrokeXStyle(emptyLine)
-            .setGridStrokeYStyle(emptyLine)
-            .setResultTable((table) => {
-                table
-                    .setOrigin(UIOrigins.CenterBottom)
-            })
+        chart.setAutoCursor((cursor) =>
+            cursor
+                .setResultTableAutoTextStyle(true)
+                .setPointMarkerVisible(false)
+                .setTickMarkerXVisible(false)
+                .setTickMarkerYVisible(false)
+                .setGridStrokeXStyle(emptyLine)
+                .setGridStrokeYStyle(emptyLine)
+                .setResultTable((table) => {
+                    table.setOrigin(UIOrigins.CenterBottom)
+                }),
         )
         // Change how marker displays its information.
         rectangles.setCursorResultTableFormatter((builder, series, figure) => {
             // Find cached entry for the figure.
             const entry = bars.find((bar) => bar.rect == figure).entry
             // Parse result table content from values of 'entry'.
-            return builder
-                .addRow('Month: ' + entry.category)
-                .addRow('Value: ' + String(entry.value))
-        })
-        // Apply cursor logic using series.onHover method
-        rectangles.onHover((_, point) => {
-            if (point) {
-                const figure = point.figure
-                const dimensions = figure.getDimensionsPositionAndSize()
-                // Show band.
-                band
-                    .setDimensions({
-                        x: figure.scale.x.getInnerStart(),
-                        y: dimensions.y - figureGap * .5,
-                        width: figure.scale.x.getInnerInterval(),
-                        height: dimensions.height + figureGap
-                    })
-                    .restore()
-            } else
-                band.dispose()
+            return builder.addRow('Month: ' + entry.category).addRow('Value: ' + String(entry.value))
         })
         //#endregion
 
         // X-axis of the series
-        const axisX = chart.getDefaultAxisX()
+        const axisX = chart
+            .getDefaultAxisX()
             .setMouseInteractions(false)
-            .setInterval(-100, 100)
+            .setInterval({ start: -100, end: 100, stopAxisAfter: false })
             .setTitle('%')
 
         // Y-axis of the series
-        const axisY = chart.getDefaultAxisY()
+        const axisY = chart
+            .getDefaultAxisY()
             .setMouseInteractions(false)
             .setScrollStrategy(undefined)
             // Disable default ticks.
@@ -111,10 +97,10 @@ let barChart
 
         //Add middle line
         const constantLine = axisX.addConstantLine()
-        constantLine.setValue(0)
+        constantLine
+            .setValue(0)
             .setMouseInteractions(false)
-            .setStrokeStyle(new SolidLine(
-                { thickness: 2, fillStyle: new SolidFill({ color: ColorRGBA(125, 125, 125) }) }))
+            .setStrokeStyle(new SolidLine({ thickness: 2, fillStyle: new SolidFill({ color: ColorRGBA(125, 125, 125) }) }))
 
         /**
          * Add multiple bars.
@@ -142,39 +128,54 @@ let barChart
                 x: 0,
                 y: y - figureThickness,
                 width: entry.value,
-                height: figureThickness
+                height: figureThickness,
             }
             // Add rect to the series.
             const rect = rectangles.add(rectDimensions)
             // Set individual color for the bar.
-            rect.setFillStyle(entry.value > 0 ? flatRedStyle : flatBlueStyle)
+            rect.setFillStyle(entry.value > 0 ? flatRedStyle : flatBlueStyle).setStrokeStyle(emptyLine)
+
+            // Show cursor band when mouse is above figure.
+            rect.onMouseEnter(() => {
+                const dimensions = rect.getDimensionsPositionAndSize()
+                // Show band.
+                band.setDimensions({
+                    x: rect.scale.x.getInnerStart(),
+                    y: dimensions.y - figureGap * 0.5,
+                    width: rect.scale.x.getInnerInterval(),
+                    height: dimensions.height + figureGap,
+                }).setVisible(true)
+            })
+            rect.onMouseLeave(() => {
+                band.setVisible(false)
+            })
 
             // Set view manually.
-            axisY.setInterval(
-                -(figureThickness + figureGap),
-                y + figureGap
-            )
+            axisY.setInterval({
+                start: -(figureThickness + figureGap),
+                end: y + figureGap,
+                stopAxisAfter: false,
+            })
 
             // Add custom tick, more like categorical axis.
-            axisY.addCustomTick(UIElementBuilders.AxisTick)
+            axisY
+                .addCustomTick()
                 .setValue(y - figureGap)
                 .setGridStrokeLength(0)
-                .setTextFormatter(_ => entry.category)
-                .setMarker(marker => marker
-                    .setTextFillStyle(new SolidFill({ color: ColorRGBA(170, 170, 170) }))
-                )
+                .setTextFormatter((_) => entry.category)
+                .setMarker((marker) => marker.setTextFillStyle(new SolidFill({ color: ColorRGBA(170, 170, 170) })))
             y += figureThickness + figureGap
             // Return data-structure with both original 'entry' and the rectangle figure that represents it.
             return {
                 entry,
-                rect
+                rect,
             }
         }
 
         // Return public methods of a bar chart interface.
         return {
             addValue,
-            addValues
+            addValues,
         }
     }
 }
@@ -196,5 +197,5 @@ chart.addValues([
     { category: 'Sep', value: -50 },
     { category: 'Oct', value: 100 },
     { category: 'Nov', value: 5 },
-    { category: 'Dec', value: 15 }
+    { category: 'Dec', value: 15 },
 ])
