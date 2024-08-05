@@ -1,7 +1,7 @@
 /**
  * Example of a horizontal BarChart with LightningChart JS.
  */
-const lcjs = require('@arction/lcjs')
+const lcjs = require('@lightningchart/lcjs')
 const { lightningChart, BarChartTypes, BarChartSorting, AxisScrollStrategies, Themes } = lcjs
 
 const lc = lightningChart({
@@ -15,7 +15,7 @@ const barChart = lc
     .setTitle('Global temperatures')
     .setSorting(BarChartSorting.Descending)
 
-barChart.valueAxis.setTitle('Temperature °C').setInterval({ end: 35 }).setScrollStrategy(AxisScrollStrategies.expansion)
+barChart.valueAxis.setTitle('Temperature').setUnits('°C').setInterval({ end: 35 }).setScrollStrategy(AxisScrollStrategies.expansion)
 
 const data = [
     { category: 'Helsinki', value: 19.1 },
