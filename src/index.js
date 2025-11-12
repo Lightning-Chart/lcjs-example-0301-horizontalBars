@@ -15,6 +15,7 @@ const barChart = lc
     })
     .setTitle('Global temperatures')
     .setSorting(BarChartSorting.Descending)
+    .setPadding({ left: 20, right: 25, top: 0, bottom: 10 })
 
 barChart.valueAxis.setTitle('Temperature').setUnits('°C').setInterval({ end: 35 }).setScrollStrategy(AxisScrollStrategies.expansion)
 
